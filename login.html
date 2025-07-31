@@ -1,0 +1,163 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Authentication</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      background-color: #f1f3f6;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      height: 100vh;
+    }
+
+    .container {
+      width: 350px;
+      background: white;
+      padding: 30px;
+      border-radius: 10px;
+      box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+    }
+
+    h2 {
+      text-align: center;
+      color: #2874f0;
+    }
+
+    .form {
+      display: none;
+    }
+
+    .form.active {
+      display: block;
+    }
+
+    input {
+      width: 100%;
+      padding: 10px;
+      margin: 10px 0;
+      border-radius: 5px;
+      border: 1px solid #ccc;
+    }
+
+    button {
+      width: 100%;
+      padding: 12px;
+      background-color: #2874f0;
+      color: white;
+      border: none;
+      border-radius: 5px;
+      font-size: 16px;
+      cursor: pointer;
+    }
+
+    button:hover {
+      background-color: #185ecf;
+    }
+
+    .switch {
+      text-align: center;
+      margin-top: 15px;
+    }
+
+    .error {
+      color: red;
+      font-size: 14px;
+      text-align: center;
+    }
+  </style>
+</head>
+<body>
+
+  <div class="container">
+    <!-- Sign In Form -->
+    <form id="signin-form" class="form active" onsubmit="handleSignIn(event)">
+      <h2>Sign In</h2>
+      <input type="email" id="signin-email" placeholder="Email" required />
+      <input type="password" id="signin-password" placeholder="Password" required minlength="6"/>
+      <div class="error" id="signin-error"></div>
+      <button type="submit">Login</button>
+      <div class="switch">
+        Don’t have an account? <a href="#" onclick="switchForm('signup')">Sign Up</a>
+      </div>
+    </form>
+
+    <!-- Sign Up Form -->
+    <form id="signup-form" class="form" onsubmit="handleSignUp(event)">
+      <h2>Sign Up</h2>
+      <input type="text" id="signup-name" placeholder="Full Name" required />
+      <input type="email" id="signup-email" placeholder="Email" required />
+      <input type="password" id="signup-password" placeholder="Password (min 6 chars)" required minlength="6"/>
+      <div class="error" id="signup-error"></div>
+      <button type="submit">Register</button>
+      <div class="switch">
+        Already have an account? <a href="#" onclick="switchForm('signin')">Sign In</a>
+      </div>
+    </form>
+  </div>
+
+  <script>
+    function switchForm(form) {
+      document.getElementById('signin-form').classList.remove('active');
+      document.getElementById('signup-form').classList.remove('active');
+      document.getElementById(form + '-form').classList.add('active');
+    }
+
+    function handleSignUp(event) {
+      event.preventDefault();
+      const name = document.getElementById('signup-name').value;
+      const email = document.getElementById('signup-email').value;
+      const password = document.getElementById('signup-password').value;
+
+      // Simple validation example
+      if (password.length < 6) {
+        document.getElementById('signup-error').textContent = 'Password must be at least 6 characters.';
+        return;
+      }
+
+      // Send to backend (replace with actual backend URL)
+      fetch('/api/signup', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ name, email, password })
+      })
+      .then(res => res.json())
+      .then(data => {
+        if (data.success) {
+          alert('Registered successfully. Please sign in.');
+          switchForm('signin');
+        } else {
+          document.getElementById('signup-error').textContent = data.message || 'Signup failed.';
+        }
+      });
+    }
+
+    function handleSignIn(event) {
+      event.preventDefault();
+      const email = document.getElementById('signin-email').value;
+      const password = document.getElementById('signin-password').value;
+
+      fetch('/api/login', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ email, password })
+      })
+      .then(res => res.json())
+      .then(data => {
+        if (data.success && data.token) {
+          localStorage.setItem('jwtToken', data.token); // Store JWT token
+          alert('Login successful!');
+          // Redirect to homepage
+          window.location.href = '/landing-page.html';
+        } else {
+          document.getElementById('signin-error').textContent = data.message || 'Invalid credentials.';
+        }
+      });
+    }
+  </script>
+
+</body>
+</html>
