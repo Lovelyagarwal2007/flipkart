@@ -1,0 +1,183 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Cart - Flipkart Clone</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      background-color: #f1f3f6;
+      margin: 0;
+      padding: 20px;
+    }
+
+    .navbar {
+      background-color: #2874f0;
+      color: white;
+      padding: 15px 20px;
+      display: flex;
+      justify-content: space-between;
+    }
+
+    .cart-container {
+      background-color: white;
+      border-radius: 8px;
+      padding: 20px;
+      max-width: 900px;
+      margin: 20px auto;
+      box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+    }
+
+    .cart-item {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      border-bottom: 1px solid #ddd;
+      padding: 10px 0;
+    }
+
+    .cart-item img {
+      width: 80px;
+      height: 80px;
+      object-fit: contain;
+      margin-right: 15px;
+    }
+
+    .item-details {
+      flex: 1;
+      display: flex;
+      align-items: center;
+    }
+
+    .item-info {
+      flex: 1;
+    }
+
+    .item-name {
+      font-weight: bold;
+      margin-bottom: 5px;
+    }
+
+    .item-price {
+      color: green;
+    }
+
+    .quantity-select {
+      width: 60px;
+      padding: 5px;
+    }
+
+    .remove-btn {
+      background-color: red;
+      color: white;
+      border: none;
+      padding: 6px 10px;
+      border-radius: 4px;
+      cursor: pointer;
+    }
+
+    .total {
+      text-align: right;
+      font-size: 18px;
+      margin-top: 20px;
+      font-weight: bold;
+    }
+
+    .empty {
+      text-align: center;
+      color: #555;
+      font-size: 18px;
+      padding: 50px 0;
+    }
+  </style>
+</head>
+<body>
+
+  <div class="navbar">
+    <div><strong>Flipkart Clone</strong></div>
+    <div>🛒 Cart Page</div>
+  </div>
+
+  <div class="cart-container" id="cart-container">
+    <!-- Cart items will be inserted here -->
+  </div>
+
+  <script>
+    // Check if user is logged in
+    const token = localStorage.getItem('jwtToken');
+    if (!token) {
+      alert("You must be logged in to view the cart.");
+      window.location.href = "auth.html"; // Redirect to login page
+    }
+
+    // Dummy product map (should match the IDs used in landing page)
+    const productData = {
+      "1": { id: "1", name: "Smartphone A1", price: 12999, img: "https://via.placeholder.com/80" },
+      "2": { id: "2", name: "Laptop B2", price: 45999, img: "https://via.placeholder.com/80" },
+      "3": { id: "3", name: "Wireless Headphones", price: 2499, img: "https://via.placeholder.com/80" },
+      // Add more products if needed
+    };
+
+    const cart = JSON.parse(localStorage.getItem("cart")) || [];
+
+    const cartContainer = document.getElementById("cart-container");
+
+    function renderCart() {
+      cartContainer.innerHTML = "";
+
+      if (cart.length === 0) {
+        cartContainer.innerHTML = '<div class="empty">Your cart is empty.</div>';
+        return;
+      }
+
+      let total = 0;
+
+      cart.forEach((item, index) => {
+        const product = productData[item.id];
+        const price = product.price * item.quantity;
+        total += price;
+
+        const itemDiv = document.createElement("div");
+        itemDiv.className = "cart-item";
+        itemDiv.innerHTML = `
+          <div class="item-details">
+            <img src="${product.img}" alt="${product.name}">
+            <div class="item-info">
+              <div class="item-name">${product.name}</div>
+              <div class="item-price">₹${product.price} × ${item.quantity} = ₹${price}</div>
+            </div>
+          </div>
+          <div>
+            <select class="quantity-select" onchange="updateQuantity(${index}, this.value)">
+              ${[...Array(5).keys()].map(q => `<option value="${q+1}" ${item.quantity == q+1 ? "selected" : ""}>${q+1}</option>`).join("")}
+            </select>
+            <button class="remove-btn" onclick="removeItem(${index})">Remove</button>
+          </div>
+        `;
+        cartContainer.appendChild(itemDiv);
+      });
+
+      const totalDiv = document.createElement("div");
+      totalDiv.className = "total";
+      totalDiv.textContent = `Total: ₹${total}`;
+      cartContainer.appendChild(totalDiv);
+    }
+
+    function updateQuantity(index, quantity) {
+      cart[index].quantity = parseInt(quantity);
+      localStorage.setItem("cart", JSON.stringify(cart));
+      renderCart();
+    }
+
+    function removeItem(index) {
+      cart.splice(index, 1);
+      localStorage.setItem("cart", JSON.stringify(cart));
+      renderCart();
+    }
+
+    renderCart();
+  </script>
+
+</body>
+</html>
